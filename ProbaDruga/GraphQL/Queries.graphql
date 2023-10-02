@@ -1,0 +1,302 @@
+query CategoryList($categoryId: String) {
+  categoryList(filters: {category_uid: {eq: $categoryId}}) {
+    uid
+    name
+    include_in_menu
+    children {
+      image
+      uid
+      name
+      description
+        include_in_menu
+      children {
+        uid
+        include_in_menu
+      }
+    }
+  }
+}
+
+query GetCategoryProducts($categoryId: String, $currentPage: Int, $pageSize: Int) {
+    products(pageSize: $pageSize, currentPage: $currentPage, filter: {category_uid: {eq: $categoryId}}) {
+          items {
+            uid
+            id
+            name
+            sku
+            price_range {
+                minimum_price {
+                    regular_price {
+                        value
+                        currency
+                    }
+                    final_price {
+                        value
+                        currency
+                    }
+                }
+            }
+            image {
+              url
+            }
+        }
+    }
+}
+
+
+query GetProductBySku($sku: String!) {
+    products(filter: {sku: {eq: $sku}}) {
+          items {
+            uid
+            id
+            name
+            sku
+            price_range {
+                minimum_price {
+                    regular_price {
+                        value
+                        currency
+                    }
+                    final_price {
+                        value
+                        currency
+                    }
+                }
+            }
+            image {
+              url
+            }
+        }
+    }
+}
+
+mutation LoginCustomer($email: String!, $password: String!){
+    generateCustomerToken(email: $email, password: $password) {
+        token
+    }
+}
+
+mutation LogoutCustomer{
+  revokeCustomerToken {
+    result
+  }
+}
+
+mutation newCustomerRegistration($firstName: String!, $lastName: String!, $email: String!, $password: String!){
+  createCustomerV2(
+    input: {
+      firstname: $firstName
+      lastname: $lastName
+      email: $email
+      password: $password
+      is_subscribed: true
+    }
+  ) {
+    customer {
+      firstname
+      lastname
+      email
+      is_subscribed
+    }
+  }
+}
+
+query GetCustomerInformation{
+    customer {
+        firstname
+        lastname
+        email
+    }
+}
+
+query GetCustomerCartId{
+    customerCart{
+        id
+    }
+}
+
+query GetCustomerCartItems{
+    customerCart{
+        id
+        items {
+          id
+          uid
+          product {
+            name
+            sku
+            description {
+                html
+            }
+            price_range {
+                minimum_price {
+                        final_price {
+                        value
+                        currency
+                    }
+                }
+            }
+            image {
+              url
+            }
+          }
+          quantity
+        }
+        prices {
+          grand_total {
+            value
+            currency
+          }
+        }
+    }
+}
+
+mutation AddProductsToCart($cartId: String!, $quantity: Float!, $sku: String!) {
+    addProductsToCart(cartId: $cartId, cartItems: {quantity: $quantity, sku: $sku}){
+        cart{
+            id
+            items{
+                quantity
+                prices{
+                    price{
+                        currency
+                        value
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+mutation UpdateCartItems($cart_id: String!, $quantity: Float!, $cart_item_uid: ID!){
+  updateCartItems(
+    input: {
+      cart_id: $cart_id,
+      cart_items: [
+        {
+          cart_item_uid: $cart_item_uid
+          quantity: $quantity
+        }
+      ]
+    }
+  ){
+    cart {
+        id
+        items {
+          id
+          uid
+          product {
+            name
+            sku
+            description {
+                html
+            }
+            price_range {
+                minimum_price {
+                    regular_price {
+                        value
+                        currency
+                    }
+                }
+            }
+            image {
+              url
+            }
+          }
+          quantity
+        }
+        prices {
+          grand_total {
+            value
+            currency
+          }
+        }
+    }
+  }
+}
+
+
+mutation AddProductsToWishlist($wishListId: ID!, $quantity: Float!, $sku: String!) {
+    addProductsToWishlist(wishlistId: $wishListId, wishlistItems: {quantity: $quantity, sku: $sku}){
+        wishlist{
+            id
+            items_count
+      
+        }
+    }
+}
+
+mutation RemoveProductFromWishList($wishListId: ID!, $wishlistItemsId: ID!){
+  removeProductsFromWishlist(
+    wishlistId: $wishListId
+    wishlistItemsIds: [ $wishlistItemsId ]
+  ) {
+        wishlist {
+          id
+          items_count
+          items_v2 {
+            items {
+              id
+              quantity
+              product {
+                uid
+                name
+                sku
+                price_range {
+                  minimum_price {
+                    regular_price  {
+                      currency
+                      value
+                    }
+                  }
+                  maximum_price {
+                    regular_price {
+                      currency
+                      value
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        user_errors {
+          code
+          message
+        }
+  }
+}
+
+
+
+query GetCustomerWishList{
+    customer {
+        wishlists {
+          id
+          name
+          items_count
+          items_v2 {
+            items {
+              id
+              product {
+                uid
+                name
+                sku
+                price_range {
+                    minimum_price {
+                        regular_price {
+                            value
+                            currency
+                        }
+                    }
+                }
+                image {
+                  url
+                }
+              }
+            }
+          }
+        }
+    }
+}
